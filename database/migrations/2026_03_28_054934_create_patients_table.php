@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+  public function up(): void
+{
+    Schema::create('patients', function (Blueprint $table) {
+        $table->id(); // Kiểu BigInt Unsigned mặc định
+        $table->string('patient_code')->unique();
+        $table->string('name');
+        $table->integer('age');
+        $table->enum('gender', ['Male', 'Female', 'Other']);
+        $table->string('phone')->nullable();
+        $table->timestamps();
+    });
+}
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('patients');
+    }
+};
