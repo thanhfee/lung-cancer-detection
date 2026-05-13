@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PatientController; 
 use App\Http\Controllers\ScanController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\UserController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -47,10 +47,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/patients/{id}', [PatientController::class, 'destroy'])->name('patients.destroy');
     });
 
+
     // 6. Profile (Thông tin bác sĩ)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // 7. Danh sách doctors
+    Route::get('/users', [UserController::class, 'index'])
+    ->name('users.index');
 });
 
 require __DIR__.'/auth.php';
