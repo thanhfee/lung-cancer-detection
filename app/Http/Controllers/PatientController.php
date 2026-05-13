@@ -110,14 +110,33 @@ class PatientController extends Controller
     public function exportPDF($scan_id)
     {
         $scan = ScanResult::with(['patient', 'doctor'])->findOrFail($scan_id);
+        $scanImagePath = null;
+
+        if ($scan->image_path) {
+            if (str_starts_with($scan->image_path, 'http')) {
+                $scanImagePath = $scan->image_path;
+            } else {
+                $relativeImagePath = ltrim($scan->image_path, '/');
+                $publicImagePath = public_path('storage/' . $relativeImagePath);
+                $storageImagePath = storage_path('app/public/' . $relativeImagePath);
+
+                $scanImagePath = file_exists($publicImagePath)
+                    ? $publicImagePath
+                    : (file_exists($storageImagePath) ? $storageImagePath : null);
+            }
+        }
+
         $data = [
             'title' => 'PHIẾU KẾT QUẢ CHẨN ĐOÁN HÌNH ẢNH',
             'date' => date('d/m/Y'),
             'scan' => $scan,
-            'patient' => $scan->patient
+            'patient' => $scan->patient,
+            'scanImagePath' => $scanImagePath
         ];
 
-        $pdf = Pdf::loadView('patients.pdf_result', $data)->setPaper('a4', 'portrait');
+        $pdf = Pdf::loadView('patients.pdf_result', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOption('isRemoteEnabled', true);
         return $pdf->download('KetQua_' . $scan->patient->patient_code . '.pdf');
     }
 

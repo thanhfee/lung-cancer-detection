@@ -77,6 +77,8 @@
                             
                             $colorClass = $isMalignant ? 'red' : ($isUncertain ? 'orange' : 'emerald');
                             $statusText = $isMalignant ? 'PHÁT HIỆN BẤT THƯỜNG' : ($isUncertain ? 'CẦN KIỂM TRA THÊM' : 'BÌNH THƯỜNG');
+                            $confidenceValue = $scan->confidence_score ?? $scan->confidence ?? 0;
+                            $confidencePercent = $confidenceValue <= 1 ? $confidenceValue * 100 : $confidenceValue;
                         @endphp
 
                         <div class="relative pl-12 md:pl-20">
@@ -114,7 +116,7 @@
                                         <div class="bg-{{$colorClass}}-50 px-6 py-3 rounded-2xl border border-{{$colorClass}}-100 text-center min-w-[120px]">
                                             <p class="text-[10px] font-bold text-{{$colorClass}}-400 uppercase tracking-widest">Độ tin cậy</p>
                                             <p class="text-2xl font-black text-{{$colorClass}}-600">
-                                                {{ $scan->confidence_score ?? $scan->confidence ?? '0' }}%
+                                                {{ number_format($confidencePercent, 1) }}%
                                             </p>
                                         </div>
                                     </div>

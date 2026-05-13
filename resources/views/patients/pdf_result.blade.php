@@ -1,53 +1,414 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="utf-8">
     <style>
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 14px; }
-        .header { text-align: center; text-transform: uppercase; margin-bottom: 30px; }
-        .hospital-name { font-weight: bold; color: #1a73e8; }
-        .result-box { 
-            padding: 20px; 
-            border: 2px solid; 
-            border-radius: 10px; 
-            margin-top: 20px;
+        @page {
+            margin: 28px 34px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            color: #1f2937;
+            font-family: "DejaVu Sans", sans-serif;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .top-rule {
+            height: 6px;
+            margin-bottom: 20px;
+            background: #2563eb;
+        }
+
+        .header-table,
+        .info-table,
+        .analysis-table,
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .brand {
+            color: #2563eb;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+
+        .doc-code {
+            color: #6b7280;
+            font-size: 11px;
+            text-align: right;
+        }
+
+        .title {
+            margin: 18px 0 8px;
+            color: #111827;
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: .3px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .date {
+            margin: 0 0 22px;
+            color: #374151;
+            font-size: 13px;
             text-align: center;
         }
-        .cancer { border-color: #d32f2f; color: #d32f2f; background: #fff5f5; }
-        .no-cancer { border-color: #388e3c; color: #388e3c; background: #f1f8e9; }
-        .footer { margin-top: 50px; text-align: right; font-style: italic; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        td { padding: 8px; border-bottom: 1px solid #eee; }
+
+        .section-title {
+            margin: 20px 0 8px;
+            color: #111827;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: .4px;
+            text-transform: uppercase;
+        }
+
+        .info-card,
+        .note-card {
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .info-table td {
+            width: 50%;
+            padding: 10px 12px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: top;
+        }
+
+        .info-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .label {
+            display: block;
+            color: #6b7280;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+
+        .value {
+            color: #111827;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .analysis-table {
+            margin-top: 10px;
+        }
+
+        .image-panel,
+        .result-panel {
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            vertical-align: top;
+        }
+
+        .image-panel {
+            width: 43%;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .result-panel {
+            width: 57%;
+            padding: 16px 18px;
+        }
+
+        .panel-gap {
+            width: 12px;
+        }
+
+        .image-title {
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .4px;
+            text-transform: uppercase;
+        }
+
+        .scan-image {
+            max-width: 100%;
+            max-height: 250px;
+            border: 1px solid #e5e7eb;
+            padding: 5px;
+        }
+
+        .empty-image {
+            height: 230px;
+            padding-top: 92px;
+            border: 1px dashed #cbd5e1;
+            color: #94a3b8;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-warning {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .result-heading {
+            margin: 14px 0 6px;
+            font-size: 21px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .danger {
+            color: #b91c1c;
+        }
+
+        .success {
+            color: #15803d;
+        }
+
+        .warning {
+            color: #c2410c;
+        }
+
+        .prediction {
+            margin-bottom: 16px;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .confidence-row {
+            width: 100%;
+            margin-top: 8px;
+            border-collapse: collapse;
+        }
+
+        .confidence-row td {
+            padding: 0;
+            vertical-align: middle;
+        }
+
+        .confidence-label {
+            color: #374151;
+            font-weight: 800;
+        }
+
+        .confidence-number {
+            color: #111827;
+            font-size: 24px;
+            font-weight: 800;
+            text-align: right;
+        }
+
+        .bar {
+            height: 9px;
+            margin-top: 8px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 9px;
+            border-radius: 999px;
+        }
+
+        .bar-danger {
+            background: #dc2626;
+        }
+
+        .bar-success {
+            background: #16a34a;
+        }
+
+        .bar-warning {
+            background: #f97316;
+        }
+
+        .note-card {
+            margin-top: 22px;
+            padding: 14px 16px;
+            background: #f8fafc;
+        }
+
+        .note-title {
+            margin-bottom: 4px;
+            color: #111827;
+            font-weight: 800;
+        }
+
+        .sign-space {
+            height: 64px;
+        }
+
+        .signature-table {
+            margin-top: 34px;
+        }
+
+        .signature-table td {
+            width: 50%;
+            vertical-align: top;
+        }
+
+        .signature {
+            text-align: center;
+            font-style: italic;
+        }
+
+        .doctor-name {
+            margin-top: 6px;
+            color: #111827;
+            font-style: normal;
+            font-weight: 700;
+        }
+
+        .small {
+            color: #6b7280;
+            font-size: 11px;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h3 class="hospital-name">HỆ THỐNG CHẨN ĐOÁN UNG THƯ PHỔI AI</h3>
-        <h2>{{ $title }}</h2>
-        <p>Ngày thực hiện: {{ $date }}</p>
-    </div>
+    @php
+        $prediction = (string) $scan->prediction;
+        $predictionLower = strtolower($prediction);
+        $isMalignant = str_contains($predictionLower, 'malignant') || str_contains($predictionLower, 'cancer');
+        $isUncertain = str_contains($predictionLower, 'uncertain');
+        $resultTone = $isMalignant ? 'danger' : ($isUncertain ? 'warning' : 'success');
+        $badgeClass = $isMalignant ? 'badge-danger' : ($isUncertain ? 'badge-warning' : 'badge-success');
+        $barClass = $isMalignant ? 'bar-danger' : ($isUncertain ? 'bar-warning' : 'bar-success');
+        $resultText = $isMalignant ? 'Phát hiện bất thường' : ($isUncertain ? 'Cần kiểm tra thêm' : 'Bình thường');
+        $confidenceValue = $scan->confidence_score ?? $scan->confidence ?? 0;
+        $confidencePercent = $confidenceValue <= 1 ? $confidenceValue * 100 : $confidenceValue;
+        $confidencePercent = max(0, min(100, $confidencePercent));
+    @endphp
 
-    <h4>THÔNG TIN BỆNH NHÂN</h4>
-    <table>
-        <tr><td>Mã bệnh nhân: <strong>{{ $patient->patient_code }}</strong></td><td>Giới tính: {{ $patient->gender }}</td></tr>
-        <tr><td>Họ tên: <strong>{{ $patient->name }}</strong></td><td>Tuổi: {{ $patient->age }}</td></tr>
-        <tr><td colspan="2">Bac si chan doan: <strong>{{ $scan->doctor->name ?? 'Chua ghi nhan' }}</strong></td></tr>
+    <div class="top-rule"></div>
+
+    <table class="header-table">
+        <tr>
+            <td>
+                <div class="brand">Hệ thống chẩn đoán ung thư phổi AI</div>
+                <div class="small">Phiếu kết quả phân tích hình ảnh y khoa</div>
+            </td>
+            <td class="doc-code">
+                Mã phiếu: KQ-{{ str_pad((string) $scan->id, 5, '0', STR_PAD_LEFT) }}<br>
+                Ngày thực hiện: {{ $date }}
+            </td>
+        </tr>
     </table>
 
-    <div class="result-box {{ $scan->prediction == 'Cancer' ? 'cancer' : 'no-cancer' }}">
-        <h3>KẾT QUẢ PHÂN TÍCH: {{ mb_strtoupper($scan->prediction) }}</h3>
-        <p>Độ tin cậy của AI: <strong>{{ $scan->confidence }}%</strong></p>
+    <h1 class="title">{{ $title }}</h1>
+    <p class="date">Kết quả hỗ trợ chẩn đoán bằng mô hình Deep Learning ResNet50</p>
+
+    <div class="section-title">Thông tin bệnh nhân</div>
+    <div class="info-card">
+        <table class="info-table">
+            <tr>
+                <td>
+                    <span class="label">Mã bệnh nhân</span>
+                    <span class="value">{{ $patient->patient_code }}</span>
+                </td>
+                <td>
+                    <span class="label">Họ tên</span>
+                    <span class="value">{{ $patient->name }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Giới tính</span>
+                    <span class="value">{{ $patient->gender }}</span>
+                </td>
+                <td>
+                    <span class="label">Tuổi</span>
+                    <span class="value">{{ $patient->age }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span class="label">Bác sĩ chẩn đoán</span>
+                    <span class="value">{{ $scan->doctor->name ?? 'Chưa ghi nhận' }}</span>
+                </td>
+            </tr>
+        </table>
     </div>
 
-    <div style="margin-top: 30px;">
-        <p><strong>Ghi chú:</strong> Kết quả này được phân tích tự động bằng mô hình Deep Learning ResNet50. Vui lòng tham khảo ý kiến bác sĩ chuyên khoa để có kết luận cuối cùng.</p>
+    <div class="section-title">Kết quả chẩn đoán hình ảnh</div>
+    <table class="analysis-table">
+        <tr>
+            <td class="image-panel">
+                <div class="image-title">Ảnh chụp/X-quang đã phân tích</div>
+                @if(!empty($scanImagePath))
+                    <img class="scan-image" src="{{ $scanImagePath }}" alt="Ảnh chụp/X-quang đã phân tích">
+                @else
+                    <div class="empty-image">Không tìm thấy ảnh trong hệ thống</div>
+                @endif
+            </td>
+            <td class="panel-gap"></td>
+            <td class="result-panel">
+                <span class="badge {{ $badgeClass }}">Kết quả AI</span>
+                <div class="result-heading {{ $resultTone }}">{{ $resultText }}</div>
+                <div class="prediction">Nhãn dự đoán: <strong>{{ mb_strtoupper($prediction) }}</strong></div>
+
+                <table class="confidence-row">
+                    <tr>
+                        <td class="confidence-label">Độ tin cậy của AI</td>
+                        <td class="confidence-number">{{ number_format($confidencePercent, 1) }}%</td>
+                    </tr>
+                </table>
+                <div class="bar">
+                    <div class="bar-fill {{ $barClass }}" style="width: {{ $confidencePercent }}%;"></div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="note-card">
+        <div class="note-title">Ghi chú</div>
+        Kết quả này được phân tích tự động bằng mô hình Deep Learning ResNet50.
+        Vui lòng tham khảo ý kiến bác sĩ chuyên khoa để có kết luận cuối cùng.
     </div>
 
-    <div class="footer">
-        <p>Bác sĩ phụ trách chẩn đoán</p>
-        <br><br><br>
-        <p>{{ $scan->doctor->name ?? '' }}</p>
-        <p>(Ký và ghi rõ họ tên)</p>
-    </div>
+    <table class="signature-table">
+        <tr>
+            <td></td>
+            <td class="signature">
+                Bác sĩ phụ trách chẩn đoán
+                <div class="sign-space"></div>
+                <div class="doctor-name">{{ $scan->doctor->name ?? '' }}</div>
+                <div>(Ký và ghi rõ họ tên)</div>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
