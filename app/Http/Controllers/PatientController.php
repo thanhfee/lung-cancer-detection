@@ -32,7 +32,7 @@ class PatientController extends Controller
     public function show($id)
     {
         $patient = Patient::with(['scans' => function($query) {
-            $query->latest();
+            $query->with('doctor')->latest();
         }])->findOrFail($id);
 
         return view('patients.show', compact('patient'));
@@ -109,7 +109,7 @@ class PatientController extends Controller
 
     public function exportPDF($scan_id)
     {
-        $scan = ScanResult::with('patient')->findOrFail($scan_id);
+        $scan = ScanResult::with(['patient', 'doctor'])->findOrFail($scan_id);
         $data = [
             'title' => 'PHIẾU KẾT QUẢ CHẨN ĐOÁN HÌNH ẢNH',
             'date' => date('d/m/Y'),
@@ -128,11 +128,20 @@ class PatientController extends Controller
         $normalCount = ScanResult::where('prediction', 'LIKE', '%Benign%')->count();
         $uncertainCount = ScanResult::where('prediction', 'LIKE', '%Uncertain%')->count();
 
-        $monthlyData = Patient::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subMonths(5)->startOfMonth())
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
+        $startDate = now()->subMonths(5)->startOfMonth();
+        $patientsByMonth = Patient::where('created_at', '>=', $startDate)
+            ->get()
+            ->groupBy(fn($patient) => $patient->created_at->format('Y-m'));
+
+        $monthlyData = collect(range(0, 5))->map(function ($offset) use ($startDate, $patientsByMonth) {
+            $month = $startDate->copy()->addMonths($offset);
+            $key = $month->format('Y-m');
+
+            return (object) [
+                'month' => $month->format('n'),
+                'count' => $patientsByMonth->get($key, collect())->count(),
+            ];
+        });
 
         $labels = $monthlyData->map(fn($item) => "Tháng " . $item->month);
         $counts = $monthlyData->pluck('count');
@@ -167,6 +176,7 @@ class PatientController extends Controller
 
                 ScanResult::create([
                     'patient_id' => $patient->id,
+                    'doctor_id' => $request->user()->id,
                     'image_path' => $path,
                     'prediction' => $result['prediction'],
                     'confidence_score' => $result['confidence'],

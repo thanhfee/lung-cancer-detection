@@ -31,6 +31,7 @@
     <table>
         <tr><td>Mã bệnh nhân: <strong>{{ $patient->patient_code }}</strong></td><td>Giới tính: {{ $patient->gender }}</td></tr>
         <tr><td>Họ tên: <strong>{{ $patient->name }}</strong></td><td>Tuổi: {{ $patient->age }}</td></tr>
+        <tr><td colspan="2">Bac si chan doan: <strong>{{ $scan->doctor->name ?? 'Chua ghi nhan' }}</strong></td></tr>
     </table>
 
     <div class="result-box {{ $scan->prediction == 'Cancer' ? 'cancer' : 'no-cancer' }}">
@@ -45,6 +46,7 @@
     <div class="footer">
         <p>Bác sĩ phụ trách chẩn đoán</p>
         <br><br><br>
+        <p>{{ $scan->doctor->name ?? '' }}</p>
         <p>(Ký và ghi rõ họ tên)</p>
     </div>
 </body>

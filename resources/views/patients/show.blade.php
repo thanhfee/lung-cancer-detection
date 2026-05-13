@@ -119,6 +119,12 @@
                                         </div>
                                     </div>
 
+                                    <div class="mt-4 flex flex-wrap gap-3 text-xs font-bold uppercase tracking-widest text-gray-400">
+                                        <span class="px-3 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                                            Bac si chan doan: <span class="text-gray-700">{{ $scan->doctor->name ?? 'Chua ghi nhan' }}</span>
+                                        </span>
+                                    </div>
+
                                     <div class="mt-6 p-4 bg-[#fdfaff] rounded-2xl border border-indigo-50/50 relative">
                                         <span class="absolute -top-3 left-4 px-2 bg-white text-[10px] font-black text-indigo-400 uppercase italic">Ghi chú lâm sàng</span>
                                         <p class="text-sm text-gray-600 font-medium leading-relaxed">

@@ -30,6 +30,7 @@ class ScanController extends Controller
             // 4. Lưu vào Database
             $scan = ScanResult::create([
                 'patient_id' => $patient->id,
+                'doctor_id' => $request->user()->id,
                 'image_path' => $path,
                 'prediction' => $result,
                 'confidence_score' => $confidence,
