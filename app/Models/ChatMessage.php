@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ChatMessage extends Model
 {
     use HasFactory;
-
+    protected $table = 'chat_messages';
     // 1. Khai báo các cột được phép thêm dữ liệu hàng loạt
     protected $fillable = [
         'patient_id', 

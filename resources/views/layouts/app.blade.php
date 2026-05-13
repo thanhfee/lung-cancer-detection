@@ -101,14 +101,14 @@
             return match ? match[1] : null;
         }
 
-        // 2. Hàm chèn tin nhắn (Tích hợp Markdown cho AI)
         function appendMessage(role, text, id = '') {
-            const isUser = role === 'user';
+            // Chuyển role về chữ thường để so sánh cho chính xác
+            const isUser = role.toLowerCase() === 'user'; 
             const contentHTML = (!isUser) ? marked.parse(text) : text.replace(/\n/g, '<br>');
             
             const html = `
                 <div class="flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-fade-in-up">
-                    <div ${id ? `id="${id}"` : ''} class="${isUser ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none ai-content'} p-4 rounded-2xl shadow-sm max-w-[85%] text-sm leading-relaxed overflow-x-auto">
+                    <div ${id ? `id="${id}"` : ''} class="${isUser ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none ai-content'} p-4 rounded-2xl shadow-sm max-w-[85%] text-sm leading-relaxed">
                         ${contentHTML}
                     </div>
                 </div>`;
@@ -117,30 +117,31 @@
         }
 
         // 3. Hàm gọi API lấy lịch sử chat cũ
-        async function loadChatHistory(patientId) {
+        async function loadChatHistory() {
             try {
-                chatContent.innerHTML = '<div class="text-center text-[10px] text-gray-400 animate-pulse py-4 italic">Đang truy xuất hồ sơ tư vấn...</div>';
+                chatContent.innerHTML = '<div class="text-center text-[10px] text-gray-400 animate-pulse py-4 italic">Đang kết nối với trợ lý AI...</div>';
                 
-                const response = await fetch(`{{ url('/api/chat-history') }}/${patientId}`);
-                const history = await response.json();
+                // Gọi API lấy lịch sử của bác sĩ đang đăng nhập
+                // Laravel sẽ tự hiểu doctor_id qua Auth hoặc bạn truyền lên
+                const response = await fetch(`{{ url('/api/chat-history') }}`); 
+                const result = await response.json();
 
                 chatContent.innerHTML = ''; 
 
-                if (history.length === 0) {
-                    appendMessage('assistant', 'Chào bác sĩ! Tôi chưa tìm thấy lịch sử tư vấn cho ca bệnh này. Hãy đặt câu hỏi để bắt đầu.');
-                } else {
-                    history.forEach(item => {
-                        appendMessage('user', item.user_message);
-                        appendMessage('assistant', item.ai_response);
+                if (result.status === 'success' && result.data.length > 0) {
+                    result.data.forEach(item => {
+                        // item.role là 'user' hoặc 'assistant' (hoặc 'Assistant' tùy DB của bạn)
+                        // item.content là nội dung tin nhắn
+                        appendMessage(item.role.toLowerCase(), item.content);
                     });
+                } else {
+                    appendMessage('assistant', 'Chào bác sĩ! Tôi là trợ lý AI y tế. Tôi có thể giúp gì cho bạn hôm nay?');
                 }
             } catch (e) {
-                console.error("Lỗi load history:", e);
-                chatContent.innerHTML = '<div class="text-center text-[10px] text-red-400 py-4 italic">Lỗi kết nối dữ liệu y tế.</div>';
+                console.error("Lỗi:", e);
+                chatContent.innerHTML = '<div class="text-center text-[10px] text-red-400 py-4 italic">Không thể tải lịch sử trò chuyện.</div>';
             }
         }
-
-        // 4. Toggle Chatbox
         chatToggle.addEventListener('click', async () => {
             const isOpening = chatBox.classList.contains('hidden');
             chatBox.classList.toggle('hidden');
@@ -149,10 +150,9 @@
             
             if (isOpening) {
                 chatInput.focus();
-                const patientId = getPatientIdFromUrl();
-                // Chỉ load nếu có ID bệnh nhân và khung chat chưa được đổ dữ liệu
-                if (patientId && chatContent.children.length <= 1) {
-                    await loadChatHistory(patientId);
+                // Cứ mở lên là load lịch sử của bác sĩ đó (không quan tâm đang ở trang nào)
+                if (chatContent.children.length <= 1) {
+                    await loadChatHistory();
                 }
             }
         });

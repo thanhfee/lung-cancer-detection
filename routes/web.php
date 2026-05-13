@@ -51,6 +51,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Đường dẫn này để Frontend gọi đến lấy tin nhắn cũ
+    Route::get('/api/chat-history', [PatientController::class, 'getChatHistory'])->middleware('auth');
 });
 
 require __DIR__.'/auth.php';

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Gemini\Laravel\Facades\Gemini;
+use Illuminate\Support\Facades\DB;
 
 class PatientController extends Controller
 {
@@ -30,13 +31,21 @@ class PatientController extends Controller
     }
 
     public function show($id)
-    {
-        $patient = Patient::with(['scans' => function($query) {
-            $query->latest();
-        }])->findOrFail($id);
+{
+    // Eager loading 'scans' để tránh lỗi N+1 (giúp trang load nhanh hơn khi có nhiều lượt quét)
+    $patient = Patient::with(['scans' => function($query) {
+        $query->orderBy('created_at', 'desc');
+    }])->findOrFail($id);
 
-        return view('patients.show', compact('patient'));
-    }
+    // Lấy tin nhắn
+    $messages = ChatMessage::where('patient_id', $id)
+                ->latest() // Tương đương orderBy('created_at', 'desc')
+                ->take(20)
+                ->get()
+                ->reverse();
+
+    return view('patients.show', compact('patient', 'messages'));
+}
 
     public function scan($id)
     {
@@ -183,36 +192,81 @@ class PatientController extends Controller
     /**
      * Tích hợp GEMINI AI - Cú pháp chuẩn bản 2.0
      */
-  public function chatAI(Request $request)
+public function chatAI(Request $request)
 {
     try {
         $userMessage = $request->input('message');
-        $apiKey = env('GEMINI_API_KEY', 'AIzaSyAWLFh5LIyaDu9Wm5ynSlxWfBwgU4m-Zek');
         
-        // Sử dụng model có sẵn trong danh sách của bạn
+        // 1. Giữ nguyên việc lấy ID để xác định ai đang chat
+        // Mình sẽ lấy ID của bác sĩ (hoặc người dùng đang đăng nhập)
+        $doctorId = auth()->id() ?? $request->input('doctor_id') ?? 1;
+
+        // 2. Logic gọi API Gemini (GIỮ NGUYÊN BẢN CỦA BẠN)
+        $apiKey = env('GEMINI_API_KEY', 'AIzaSyAWLFh5LIyaDu9Wm5ynSlxWfBwgU4m-Zek');
         $model = 'gemini-3.1-flash-lite-preview';
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . $apiKey;
 
-        $response = \Illuminate\Support\Facades\Http::withHeaders([
-            'Content-Type' => 'application/json',
-        ])->post($url, [
+        $response = \Illuminate\Support\Facades\Http::post($url, [
             'contents' => [
-                ['parts' => [['text' => "Bạn là trợ lý y tế chuyên về ung thư phổi. Câu hỏi: " . $userMessage]]]
+                ['parts' => [['text' => "Bạn là trợ lý y khoa. Trả lời: " . $userMessage]]]
             ]
         ]);
 
         $data = $response->json();
 
         if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
-            return response()->json([
-                'reply' => $data['candidates'][0]['content']['parts'][0]['text']
+            $aiReply = $data['candidates'][0]['content']['parts'][0]['text'];
+
+            // 3. THAY ĐỔI VIỆC LƯU DATABASE VÀO BẢNG MỚI (doctor_ai_chats)
+            
+            // Lưu câu hỏi của Bác sĩ (user)
+            \DB::table('doctor_ai_chats')->insert([
+                'doctor_id'  => $doctorId,
+                'role'       => 'user', 
+                'content'    => $userMessage,
+                'created_at' => now(),
             ]);
+
+            // Lưu phản hồi của AI (assistant)
+            \DB::table('doctor_ai_chats')->insert([
+                'doctor_id'  => $doctorId,
+                'role'       => 'assistant',
+                'content'    => $aiReply,
+                'created_at' => now(),
+            ]);
+
+            return response()->json(['reply' => $aiReply]);
         }
 
-        return response()->json(['reply' => 'AI không phản hồi, mã lỗi: ' . $response->status()], 200);
+        return response()->json(['reply' => 'AI bận, mã: ' . $response->status()], 200);
 
     } catch (\Exception $e) {
-        return response()->json(['reply' => 'Lỗi kết nối: ' . $e->getMessage()], 200);
+        return response()->json(['reply' => 'Lỗi: ' . $e->getMessage()], 200);
+    }
+}
+
+public function getChatHistory(Request $request)
+{
+    try {
+        // Lấy doctor_id từ request (Frontend gửi lên) hoặc từ Auth
+        $doctorId = $request->input('doctor_id') ?? auth()->id() ?? 1;
+
+        // Lấy toàn bộ tin nhắn của bác sĩ này, sắp xếp theo thời gian tăng dần
+        $history = DB::table('doctor_ai_chats')
+            ->where('doctor_id', $doctorId)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => $history
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
     }
 }
 }
