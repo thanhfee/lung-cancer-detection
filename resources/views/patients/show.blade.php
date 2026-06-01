@@ -104,6 +104,9 @@
                                 $badgeBg    = 'bg-emerald-50';
                                 $badgeBorder = 'border-emerald-100';
                             }
+                            $confidenceValue = $scan->confidence_score ?? $scan->confidence ?? 0;
+                            $confidencePercent = $confidenceValue <= 1 ? $confidenceValue * 100 : $confidenceValue;
+                            $confidencePercent = max(0, min(100, $confidencePercent));
                         @endphp
 
                         <div class="relative pl-12 md:pl-20 animate-fade-in-up">
@@ -141,7 +144,7 @@
                                             <div class="{{ $badgeBg }} px-6 py-4 rounded-[1.5rem] border {{ $badgeBorder }} text-center min-w-[140px] shadow-sm">
                                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Độ tin cậy</p>
                                                 <p class="text-3xl font-black {{ $textColor }}">
-                                                    {{ number_format($scan->confidence_score ?? $scan->confidence ?? 0, 1) }}%
+                                                    {{ number_format($confidencePercent, 1) }}%
                                                 </p>
                                             </div>
                                         </div>

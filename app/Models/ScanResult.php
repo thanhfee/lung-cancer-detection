@@ -12,6 +12,7 @@ class ScanResult extends Model
     // Chỉ để lại những cột thực sự có trong Database của Thành
     protected $fillable = [
         'patient_id',
+        'doctor_id',
         'image_path',
         'prediction',       
         'confidence_score',
@@ -21,5 +22,10 @@ class ScanResult extends Model
     public function patient()
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    public function doctor()
+    {
+        return $this->belongsTo(User::class, 'doctor_id');
     }
 }

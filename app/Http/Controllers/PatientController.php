@@ -242,4 +242,13 @@ class PatientController extends Controller
         return response()->json(['reply' => 'Lỗi kết nối: ' . $e->getMessage()], 200);
     }
 }
+
+    public function getChatHistory($patientId)
+    {
+        $messages = ChatMessage::where('patient_id', $patientId)
+            ->oldest()
+            ->get(['role', 'content', 'created_at']);
+
+        return response()->json($messages);
+    }
 }

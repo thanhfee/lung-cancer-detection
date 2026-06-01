@@ -28,6 +28,11 @@
 
     <div class="py-12 bg-[#f4f7fa]">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+            @php
+                $confidenceValue = $scan->confidence_score ?? $scan->confidence ?? 0;
+                $confidencePercent = $confidenceValue <= 1 ? $confidenceValue * 100 : $confidenceValue;
+                $confidencePercent = max(0, min(100, $confidencePercent));
+            @endphp
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2 space-y-6">
@@ -105,11 +110,11 @@
                             <div>
                                 <div class="flex justify-between text-xs font-bold mb-2 uppercase tracking-widest">
                                     <span>Độ tin cậy dự đoán</span>
-                                    <span>{{ number_format($scan->confidence_score * 100, 1) }}%</span>
+                                    <span>{{ number_format($confidencePercent, 1) }}%</span>
                                 </div>
                                 <div class="w-full bg-white/10 h-3 rounded-full overflow-hidden">
                                     <div class="h-full rounded-full transition-all duration-1000 {{ $scan->prediction == 'Malignant' ? 'bg-red-500' : 'bg-emerald-400' }}" 
-                                         style="width: {{ $scan->confidence_score * 100 }}%"></div>
+                                         style="width: {{ $confidencePercent }}%"></div>
                                 </div>
                             </div>
                         </div>

@@ -74,13 +74,18 @@
                         </div>
 
                         <div class="space-y-2 mt-4">
+                            @php
+                                $latestConfidence = $patient->scans->count() > 0 ? ($patient->scans->first()->confidence_score ?? 0) : 0;
+                                $latestConfidencePercent = $latestConfidence <= 1 ? $latestConfidence * 100 : $latestConfidence;
+                                $latestConfidencePercent = max(0, min(100, $latestConfidencePercent));
+                            @endphp
                             <div class="flex justify-between text-[11px] font-bold uppercase tracking-widest text-gray-400">
                                 <span>Độ tin cậy AI</span>
-                                <span class="text-indigo-600">{{ $patient->scans->count() > 0 ? number_format($patient->scans->first()->confidence_score * 100, 1) . '%' : '0%' }}</span>
+                                <span class="text-indigo-600">{{ number_format($latestConfidencePercent, 1) }}%</span>
                             </div>
                             <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                                 <div class="bg-indigo-500 h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" 
-                                     style="width: {{ $patient->scans->count() > 0 ? $patient->scans->first()->confidence_score * 100 : 0 }}%"></div>
+                                     style="width: {{ $latestConfidencePercent }}%"></div>
                             </div>
                         </div>
                     </div>
