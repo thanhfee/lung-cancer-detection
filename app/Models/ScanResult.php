@@ -2,20 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class ScanResult extends Model
 {
     use HasFactory;
 
-    protected $table = 'scan_results'; 
+    // Chỉ để lại những cột thực sự có trong Database của Thành
+    protected $fillable = [
+        'patient_id',
+        'image_path',
+        'prediction',       
+        'confidence_score',
+        'doctor_comments'
+    ];
 
-    protected $fillable = ['patient_id', 'image_path', 'prediction', 'confidence_score', 'doctor_comments'];
-
-  
-public function patient()
-{
-    return $this->belongsTo(Patient::class);
-}
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class);
+    }
 }

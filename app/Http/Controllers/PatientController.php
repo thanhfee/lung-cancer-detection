@@ -180,9 +180,7 @@ class PatientController extends Controller
         }
     }
 
-    /**
-     * Tích hợp GEMINI AI - Cú pháp chuẩn bản 2.0
-     */
+    
   public function chatAI(Request $request)
 {
     try {
