@@ -1,59 +1,97 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
+🩺 Trợ lý Phân tích & Phát hiện Ung thư Phổi (Lung Cancer Detection)
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+<img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="300" alt="Laravel Logo">
 </p>
 
-## About Laravel
+📝 Giới thiệu dự án
+Dự án được xây dựng nhằm hỗ trợ bác sĩ trong việc phân tích hồ sơ bệnh án và hỗ trợ chẩn đoán ung thư phổi. Hệ thống kết hợp giữa nền tảng Web mạnh mẽ của Laravel và trí tuệ nhân tạo từ Google Gemini AI.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Chức năng chính:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Quản lý bệnh án: Lưu trữ và quản lý thông tin bệnh nhân một cách hệ thống.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Trợ lý AI (Gemini 2.0 Flash): Phân tích các triệu chứng và cung cấp gợi ý y tế chuyên sâu.
 
-## Learning Laravel
+Dashboard: Giao diện trực quan dành cho bác sĩ (Bác sĩ Thành).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Bảo mật: Áp dụng các tiêu chuẩn OWASP để bảo vệ dữ liệu bệnh nhân.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+🛠 Công nghệ sử dụng
+Backend: Laravel 10.x / 11.x (PHP 8.2)
 
-## Laravel Sponsors
+Database: MySQL (XAMPP)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+AI Integration: Google Gemini API (Generative AI)
 
-### Premium Partners
+Frontend: Blade Template, Tailwind CSS / Bootstrap
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Environment: Windows (Visual Studio Code, Unity Hub cho các module mở rộng)
 
-## Contributing
+🚀 Hướng dẫn cài đặt
+1. Yêu cầu hệ thống
+PHP >= 8.2
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Composer
 
-## Code of Conduct
+XAMPP (MySQL & Apache)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+2. Cài đặt các bước
+Clone dự án:
 
-## Security Vulnerabilities
+Bash
+git clone https://github.com/thanhfee/lung-cancer-detection.git
+cd lung-cancer-detection
+Cài đặt thư viện PHP:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Bash
+composer install
+Cấu hình môi trường (.env):
 
-## License
+Sao chép file mẫu: cp .env.example .env
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Cấu hình Database trong .env:
+
+Đoạn mã
+DB_DATABASE=lung_cancer_db
+DB_USERNAME=root
+DB_PASSWORD=
+Quan trọng: Thêm API Key của Gemini:
+
+Đoạn mã
+GEMINI_API_KEY=AIzaSy...
+GEMINI_MODEL=gemini-2.0-flash-lite
+Khởi tạo Database:
+
+Bash
+php artisan migrate --seed
+Chạy ứng dụng:
+
+Bash
+php artisan serve
+Truy cập: http://127.0.0.1:8000
+
+📂 Cấu trúc thư mục quan trọng
+app/Http/Controllers/PatientController.php: Xử lý logic chính và kết nối Gemini AI.
+
+routes/web.php: Định nghĩa các luồng xử lý của hệ thống.
+
+resources/views/dashboard/: Giao diện làm việc của bác sĩ.
+
+ai_service/: (Nếu có) Chứa các scripts Python bổ trợ phân tích hình ảnh.
+
+🛡 Bảo mật & Nguyên tắc thiết kế
+Dự án được thiết kế tuân thủ các nguyên tắc SOLID và các tiêu chuẩn bảo mật API:
+
+BOLA/BFLA Protection: Kiểm tra quyền sở hữu bản ghi bệnh nhân.
+
+Input Validation: Ngăn chặn SQL Injection và XSS.
+
+Rate Limiting: Tối ưu hóa số lượng request gửi đến API Gemini.
+
+👨‍💻 Tác giả
+Sinh viên thực hiện: Bác sĩ Thành (Software Developer & Medical Researcher)
+
+Đồ án: Phát hiện và phân tích Ung thư phổi - Laravel Framework.
+
+💡 Lưu ý cho người dùng
+Khi cài đặt lại môi trường Python trong thư mục ai_service, vui lòng tạo venv mới và chạy pip install -r requirements.txt để đảm bảo các thư viện như TensorFlow hoạt động chính xác.

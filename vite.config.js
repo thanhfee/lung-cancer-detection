@@ -8,4 +8,7 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        host: '127.0.0.1', // Ép Vite chạy trên IPv4 thay vì IPv6 [::1]
+    },
 });

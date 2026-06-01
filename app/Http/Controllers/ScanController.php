@@ -22,6 +22,7 @@ class ScanController extends Controller
         $file = $request->file('xray_image');
         $path = $file->store('scans', 'public'); 
 
+<<<<<<< HEAD
         try {
             // 3. Gọi đến AI Service (Flask)
             // Tăng timeout lên 60s phòng trường hợp model EfficientNet xử lý chậm trên CPU
@@ -30,6 +31,22 @@ class ScanController extends Controller
                 file_get_contents($file->getRealPath()), 
                 $file->getClientOriginalName()
             )->post('http://127.0.0.1:5000/predict');
+=======
+            // 3. GIẢ LẬP GỌI AI (Sau này Thành sẽ thay bằng logic gọi API Flask/Python)
+            // Ở đây mình random kết quả để Thành test giao diện trước
+            $predictions = ['Malignant (Ác tính)', 'Benign (Lành tính)', 'Normal (Bình thường)'];
+            $result = $predictions[array_rand($predictions)];
+            $confidence = rand(85, 99);     
+            // 4. Lưu vào Database
+            $scan = ScanResult::create([
+                'patient_id' => $patient->id,
+                'doctor_id' => $request->user()->id,
+                'image_path' => $path,
+                'prediction' => $result,
+                'confidence_score' => $confidence,
+                'status' => 'Completed',
+            ]);
+>>>>>>> origin/BS-ChuanDoan
 
             // 4. Kiểm tra phản hồi từ Flask
             if ($response->successful()) {
@@ -80,5 +97,9 @@ class ScanController extends Controller
 
     return back()->with('success', 'Đã xóa kết quả chẩn đoán thành công!');
 }
+<<<<<<< HEAD
     
 }
+=======
+}
+>>>>>>> origin/BS-ChuanDoan

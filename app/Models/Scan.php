@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,16 +8,19 @@ class Scan extends Model
 {
     use HasFactory;
 
-    // 1. Cho phép lưu các cột này vào Database (Mass Assignment)
     protected $fillable = [
+        'user_id', 
         'patient_id', 
         'image_path', 
-        'prediction', 
-        'confidence_score', 
-        'doctor_comments'
+        'result', 
+        'confidence', // Đảm bảo cột này khớp với DB (là confidence hay confidence_score?)
+        'heatmap_path'
     ];
 
-    // 2. Thiết lập quan hệ: Một bản quét (Scan) sẽ thuộc về một Bệnh nhân (Patient)
+    protected $casts = [
+        'confidence' => 'float', // Sửa lại cho khớp với tên trong fillable
+    ];
+
     public function patient()
     {
         return $this->belongsTo(Patient::class);

@@ -69,28 +69,44 @@
                         <a href="{{ route('patients.scan', $patient->id) }}" class="mt-4 inline-block text-indigo-600 font-bold hover:underline">Bắt đầu quét ngay →</a>
                     </div>
                 @else
-                    {{-- Đường kẻ Timeline dọc --}}
                     <div class="absolute left-4 md:left-8 top-16 bottom-0 w-1 bg-gradient-to-b from-gray-200 to-transparent rounded-full"></div>
 
                     <div class="space-y-12 relative">
                         @foreach($patient->scans->sortByDesc('created_at') as $scan)
                         @php
-                            $isMalignant = str_contains(strtolower($scan->prediction), 'malignant');
-                            $isUncertain = str_contains(strtolower($scan->prediction), 'uncertain');
+                            $predictionLower = strtolower($scan->prediction);
+                            $isMalignant = str_contains($predictionLower, 'malignant') || str_contains($predictionLower, 'ác tính');
+                            $isUncertain = str_contains($predictionLower, 'uncertain') || str_contains($predictionLower, 'nghi ngờ');
                             
-                            $color = $isMalignant ? 'red' : ($isUncertain ? 'orange' : 'emerald');
-                            $statusText = $isMalignant ? 'PHÁT HIỆN BẤT THƯỜNG' : ($isUncertain ? 'CẦN KIỂM TRA THÊM' : 'BÌNH THƯỜNG');
-                            
-                            // Tailwind dynamic classes (bảo đảm Tailwind compile các class này)
-                            $ringColor = "ring-$color-500";
-                            $bgColor = "bg-$color-500";
-                            $textColor = "text-$color-700";
-                            $badgeBg = "bg-$color-50";
-                            $badgeBorder = "border-$color-100";
+                            // Phân bổ chuỗi Class Tĩnh khắc phục lỗi JIT Tailwind compile
+                            if ($isMalignant) {
+                                $statusText = 'PHÁT HIỆN BẤT THƯỜNG';
+                                $subColorText = 'text-red-500';
+                                $ringColor  = 'ring-red-500';
+                                $bgColor    = 'bg-red-500';
+                                $textColor  = 'text-red-700';
+                                $badgeBg    = 'bg-red-50';
+                                $badgeBorder = 'border-red-100';
+                            } elseif ($isUncertain) {
+                                $statusText = 'CẦN KIỂM TRA THÊM';
+                                $subColorText = 'text-orange-500';
+                                $ringColor  = 'ring-orange-500';
+                                $bgColor    = 'bg-orange-500';
+                                $textColor  = 'text-orange-700';
+                                $badgeBg    = 'bg-orange-50';
+                                $badgeBorder = 'border-orange-100';
+                            } else {
+                                $statusText = 'BÌNH THƯỜNG';
+                                $subColorText = 'text-emerald-500';
+                                $ringColor  = 'ring-emerald-500';
+                                $bgColor    = 'bg-emerald-500';
+                                $textColor  = 'text-emerald-700';
+                                $badgeBg    = 'bg-emerald-50';
+                                $badgeBorder = 'border-emerald-100';
+                            }
                         @endphp
 
                         <div class="relative pl-12 md:pl-20 animate-fade-in-up">
-                            {{-- Chấm Timeline --}}
                             <div class="absolute left-[11px] md:left-[27px] top-0 w-4 h-4 rounded-full border-4 border-white ring-4 {{ $ringColor }} {{ $bgColor }} z-10 shadow-md"></div>
                             
                             <div class="absolute left-0 md:left-24 -top-8 text-[11px] font-black text-gray-400 uppercase tracking-widest bg-[#f8fafc] pr-4">
@@ -99,7 +115,6 @@
 
                             <div class="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/40 border border-gray-100 flex flex-col md:flex-row overflow-hidden hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 group">
                                 
-                                {{-- Hình ảnh Scan --}}
                                 <div class="md:w-1/3 relative group overflow-hidden bg-black flex items-center justify-center min-h-[250px]">
                                     <img src="{{ str_starts_with($scan->image_path, 'http') ? $scan->image_path : asset('storage/' . trim($scan->image_path, '/')) }}" 
                                          class="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 cursor-zoom-in" 
@@ -113,20 +128,19 @@
                                     </div>
                                 </div>
 
-                                {{-- Nội dung kết quả --}}
                                 <div class="md:w-2/3 p-8 flex flex-col justify-between bg-white">
                                     <div>
                                         <div class="flex flex-col md:flex-row justify-between items-start gap-4">
                                             <div>
-                                                <span class="text-[10px] font-black {{ 'text-'.$color.'-500' }} uppercase tracking-[0.25em]">AI Diagnostic Result</span>
+                                                <span class="text-[10px] font-black {{ $subColorText }} uppercase tracking-[0.25em]">AI Diagnostic Result</span>
                                                 <h4 class="text-3xl font-black mt-1 tracking-tight {{ $textColor }}">
                                                     {{ $statusText }}
                                                 </h4>
-                                                <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">Model: ResNet50 Architecture</p>
+                                                <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">Model: EfficientNet Architecture</p>
                                             </div>
                                             <div class="{{ $badgeBg }} px-6 py-4 rounded-[1.5rem] border {{ $badgeBorder }} text-center min-w-[140px] shadow-sm">
-                                                <p class="text-[10px] font-bold {{ 'text-'.$color.'-400' }} uppercase tracking-widest">Độ tin cậy</p>
-                                                <p class="text-3xl font-black {{ 'text-'.$color.'-600' }}">
+                                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Độ tin cậy</p>
+                                                <p class="text-3xl font-black {{ $textColor }}">
                                                     {{ number_format($scan->confidence_score ?? $scan->confidence ?? 0, 1) }}%
                                                 </p>
                                             </div>
@@ -147,7 +161,7 @@
                                                 Xuất PDF
                                             </a>
 
-                                            <form action="{{ route('scans.destroy', $scan->id) }}" method="POST" onsubmit="return confirm('Xác nhận xóa vĩnh viễn lượt quét này?')">
+                                            <form action="{{ route('scans.destroy', $scan->id) }}" method="POST" onsubmit="return confirm('Xác nhận xóa vĩnh viễn lượt quét này kèm file ảnh vật lý?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="p-3 bg-gray-50 text-gray-400 rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all shadow-sm">
