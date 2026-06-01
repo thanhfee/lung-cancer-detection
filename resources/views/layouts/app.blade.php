@@ -111,7 +111,7 @@
             
             const html = `
                 <div class="flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-fade-in-up">
-                    <div ${id ? `id="${id}"` : ''} class="${isUser ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none ai-content'} p-4 rounded-2xl shadow-sm max-w-[85%] text-sm leading-relaxed overflow-x-auto">
+                    <div ${id ? `id="${id}"` : ''} class="${isUser ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none ai-content'} p-4 rounded-2xl shadow-sm max-w-[85%] text-sm leading-relaxed">
                         ${contentHTML}
                     </div>
                 </div>`;
