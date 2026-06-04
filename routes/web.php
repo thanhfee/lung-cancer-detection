@@ -5,11 +5,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ScanController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -45,6 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/patients/{id}/edit', [PatientController::class, 'edit'])->name('patients.edit');
         Route::put('/patients/{id}', [PatientController::class, 'update'])->name('patients.update');
         Route::delete('/patients/{id}', [PatientController::class, 'destroy'])->name('patients.destroy');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 
 
