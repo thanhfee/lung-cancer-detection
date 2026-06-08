@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ScanReportPdfMail;
 use App\Models\Patient;
 use App\Models\ScanResult;
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf; 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Gemini\Laravel\Facades\Gemini;
@@ -117,6 +119,60 @@ class PatientController extends Controller
 
     public function exportPDF($scan_id)
     {
+        [$scan, $pdf] = $this->makeScanReportPdf($scan_id);
+
+        return $pdf->download($this->scanReportFileName($scan));
+    }
+
+    public function sendReportEmail(Request $request, $scan_id)
+    {
+        $this->applyMailConfigFromEnvFile();
+
+        Log::info('Bat dau gui email bao cao PDF', [
+            'scan_id' => $scan_id,
+            'recipient_email' => $request->input('recipient_email'),
+            'user_id' => $request->user()?->id,
+            'mail_default' => config('mail.default'),
+            'smtp_host' => config('mail.mailers.smtp.host'),
+            'smtp_port' => config('mail.mailers.smtp.port'),
+        ]);
+
+        $validated = $request->validate([
+            'recipient_email' => ['required', 'email', 'max:255'],
+        ], [
+            'recipient_email.required' => 'Vui lòng nhập Gmail của bệnh nhân.',
+            'recipient_email.email' => 'Email nhận báo cáo không hợp lệ.',
+        ]);
+
+        try {
+            [$scan, $pdf] = $this->makeScanReportPdf($scan_id);
+            $fileName = $this->scanReportFileName($scan);
+
+            Mail::mailer('smtp')->to($validated['recipient_email'])->send(
+                new ScanReportPdfMail($scan, $pdf->output(), $fileName)
+            );
+
+            Log::info('Da gui email bao cao PDF thanh cong', [
+                'scan_id' => $scan->id,
+                'recipient_email' => $validated['recipient_email'],
+                'file_name' => $fileName,
+            ]);
+
+            return back()->with('success', 'Đã gửi báo cáo PDF tới ' . $validated['recipient_email'] . ' thành công!');
+        } catch (\Throwable $e) {
+            Log::error('Loi gui email bao cao PDF: ' . $e->getMessage(), [
+                'scan_id' => $scan_id,
+                'recipient_email' => $validated['recipient_email'] ?? null,
+            ]);
+
+            return back()->withErrors([
+                'mail_error' => 'Không thể gửi email lúc này. Vui lòng kiểm tra cấu hình Gmail SMTP hoặc thử lại sau.',
+            ]);
+        }
+    }
+
+    private function makeScanReportPdf($scan_id): array
+    {
         $scan = ScanResult::with(['patient', 'doctor'])->findOrFail($scan_id);
         $scanImagePath = null;
 
@@ -145,7 +201,55 @@ class PatientController extends Controller
         $pdf = Pdf::loadView('patients.pdf_result', $data)
             ->setPaper('a4', 'portrait')
             ->setOption('isRemoteEnabled', true);
-        return $pdf->download('KetQua_' . $scan->patient->patient_code . '.pdf');
+
+        return [$scan, $pdf];
+    }
+
+    private function scanReportFileName(ScanResult $scan): string
+    {
+        return 'KetQua_' . $scan->patient->patient_code . '_SCAN_' . $scan->id . '.pdf';
+    }
+
+    private function applyMailConfigFromEnvFile(): void
+    {
+        $mailEnv = $this->readMailEnvFile();
+
+        config([
+            'mail.default' => $mailEnv['MAIL_MAILER'] ?? 'smtp',
+            'mail.mailers.smtp.transport' => 'smtp',
+            'mail.mailers.smtp.scheme' => ($mailEnv['MAIL_SCHEME'] ?? null) === 'null' ? null : ($mailEnv['MAIL_SCHEME'] ?? null),
+            'mail.mailers.smtp.host' => $mailEnv['MAIL_HOST'] ?? 'smtp.gmail.com',
+            'mail.mailers.smtp.port' => (int) ($mailEnv['MAIL_PORT'] ?? 587),
+            'mail.mailers.smtp.username' => $mailEnv['MAIL_USERNAME'] ?? null,
+            'mail.mailers.smtp.password' => $mailEnv['MAIL_PASSWORD'] ?? null,
+            'mail.from.address' => $mailEnv['MAIL_FROM_ADDRESS'] ?? ($mailEnv['MAIL_USERNAME'] ?? config('mail.from.address')),
+            'mail.from.name' => $mailEnv['MAIL_FROM_NAME'] ?? config('app.name', 'LungCare AI'),
+        ]);
+
+        Mail::purge('smtp');
+    }
+
+    private function readMailEnvFile(): array
+    {
+        $envPath = base_path('.env');
+
+        if (! file_exists($envPath)) {
+            return [];
+        }
+
+        $mailEnv = [];
+        foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+            $line = trim($line);
+
+            if (! str_starts_with($line, 'MAIL_') || ! str_contains($line, '=')) {
+                continue;
+            }
+
+            [$key, $value] = explode('=', $line, 2);
+            $mailEnv[$key] = trim($value, " \t\n\r\0\x0B\"'");
+        }
+
+        return $mailEnv;
     }
 
     public function dashboard()

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ScanResult;
+use App\Models\Patient; // Đã thêm dòng này
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -10,6 +11,20 @@ use Illuminate\Support\Facades\Storage;
 
 class ScanController extends Controller
 {
+    /**
+     * Hiển thị giao diện Form để tải ảnh X-quang lên quét
+     */
+    public function showScanForm($id)
+    {
+        // Tìm bệnh nhân theo ID, nếu không thấy tự động trả về lỗi 404
+        $patient = Patient::findOrFail($id);
+
+        // Trả về giao diện blade hiển thị form quét ảnh
+        // (Lưu ý: Hãy đảm bảo bạn có file view tại đường dẫn resources/views/scans/create.blade.php
+        // Hoặc sửa lại 'scans.create' thành tên view thực tế của nhóm bạn nhé)
+        return view('patients.scan', compact('patient'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -45,10 +60,25 @@ class ScanController extends Controller
                     ->with('success', 'Phan tich anh thanh cong!');
             }
 
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+
+            $aiError = $response->json();
+            if ($response->status() === 422 && ($aiError['error'] ?? null) === 'INVALID_XRAY_IMAGE') {
+                return back()->withErrors([
+                    'api_error' => $aiError['message'] ?? 'Hệ thống chỉ nhận ảnh X-quang ngực. Vui lòng tải lên đúng ảnh X-quang.',
+                ]);
+            }
+
             return back()->withErrors([
-                'api_error' => 'Dich vu AI dang ban hoac co loi (Status: ' . $response->status() . ')',
+                'api_error' => $aiError['message'] ?? ('Dich vu AI dang ban hoac co loi (Status: ' . $response->status() . ')'),
             ]);
         } catch (\Exception $e) {
+            if (isset($path) && Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+
             Log::error('Loi ket noi AI Service: ' . $e->getMessage());
 
             return back()->withErrors([

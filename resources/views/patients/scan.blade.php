@@ -20,7 +20,7 @@
             
             @if ($errors->any())
     <div style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <strong>Thành ơi, lỗi Validation rồi:</strong>
+        <strong>Lỗi Validation!</strong>
         <ul>
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -82,7 +82,7 @@
                             </div>
 
                             <button type="submit" id="btn-scan" class="mt-8 w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-[1.5rem] font-black text-lg shadow-xl hover:shadow-blue-200 hover:-translate-y-1 transition-all duration-300">
-                                BẮT ĐẦU QUÉT AI
+                                BẮT ĐẦU QUÉT 
                             </button>
                         </div>
                     </div>
@@ -100,7 +100,7 @@
                 </div>
             </div>
             <h2 class="text-3xl font-black text-white tracking-[0.3em] uppercase mb-2">Đang Phân Tích</h2>
-            <p class="text-blue-400 font-medium italic animate-bounce">Thành đợi AI xử lý một chút nhé...</p>
+            <p class="text-blue-400 font-medium italic animate-bounce">Chờ xử lý</p>
         </div>
     </div>
 
@@ -137,7 +137,7 @@
     document.getElementById('scan-form').onsubmit = function(e) {
         const fileInput = document.getElementById('image-input');
         if (fileInput.files.length === 0) {
-            alert("Thành ơi, hãy chọn ảnh X-Quang trước khi quét nhé!");
+            alert("Hãy chọn ảnh X-Quang trước khi quét!");
             e.preventDefault();
             return false;
         }

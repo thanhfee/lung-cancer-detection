@@ -13,13 +13,16 @@
                 </div>
             </div>
             
-            <a href="{{ route('patients.scan', $patient->id) }}" 
-               class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-[1.5rem] font-bold text-sm shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Thực hiện Quét AI mới
-            </a>
+            {{-- CHẶN QUYỀN: Chỉ tài khoản không phải admin mới thấy nút Quét ở Header --}}
+            @if(auth()->check() && auth()->user()->role !== 'admin')
+                <a href="{{ route('patients.scan', $patient->id) }}" 
+                   class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-[1.5rem] font-bold text-sm shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Thực hiện Quét AI mới
+                </a>
+            @endif
         </div>
     </x-slot>
 
@@ -30,6 +33,12 @@
                 <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-2xl font-bold text-sm flex items-center animate-fade-in-up">
                     <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
                     {{ session('success') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl font-bold text-sm animate-fade-in-up">
+                    {{ $errors->first() }}
                 </div>
             @endif
 
@@ -66,7 +75,11 @@
                             <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         </div>
                         <p class="text-gray-400 font-bold italic text-xl">Chưa có lịch sử quét hình ảnh.</p>
-                        <a href="{{ route('patients.scan', $patient->id) }}" class="mt-4 inline-block text-indigo-600 font-bold hover:underline">Bắt đầu quét ngay →</a>
+                        
+                        {{-- CHẶN QUYỀN: Chỉ tài khoản không phải admin mới thấy nút gợi ý quét khi danh sách trống --}}
+                        @if(auth()->check() && auth()->user()->role !== 'admin')
+                            <a href="{{ route('patients.scan', $patient->id) }}" class="mt-4 inline-block text-indigo-600 font-bold hover:underline">Bắt đầu quét ngay →</a>
+                        @endif
                     </div>
                 @else
                     <div class="absolute left-4 md:left-8 top-16 bottom-0 w-1 bg-gradient-to-b from-gray-200 to-transparent rounded-full"></div>
@@ -158,11 +171,20 @@
                                     </div>
 
                                     <div class="mt-10 flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-gray-50">
-                                        <div class="flex gap-3">
+                                        <div class="flex flex-1 flex-wrap gap-3">
                                             <a href="{{ route('patients.exportPDF', $scan->id) }}" class="inline-flex items-center px-6 py-3 bg-red-50 text-red-600 rounded-2xl hover:bg-red-600 hover:text-white transition-all text-xs font-black uppercase tracking-widest shadow-sm">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                                 Xuất PDF
                                             </a>
+
+                                            <form action="{{ route('patients.sendReportEmail', $scan->id, false) }}" method="POST" class="flex min-w-[260px] flex-1 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sky-100">
+                                                @csrf
+                                                <input type="email" name="recipient_email" required placeholder="Gmail bệnh nhân"
+                                                       class="min-w-0 flex-1 border-0 px-4 py-3 text-xs font-bold text-slate-700 focus:ring-0">
+                                                <button type="submit" class="bg-[#06488f] px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-[#053a73]">
+                                                    Gửi PDF
+                                                </button>
+                                            </form>
 
                                             <form action="{{ route('scans.destroy', $scan->id) }}" method="POST" onsubmit="return confirm('Xác nhận xóa vĩnh viễn lượt quét này kèm file ảnh vật lý?')">
                                                 @csrf
