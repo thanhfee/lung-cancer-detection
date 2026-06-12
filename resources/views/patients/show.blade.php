@@ -79,6 +79,7 @@
                             $statusText = $isMalignant ? 'PHÁT HIỆN BẤT THƯỜNG' : ($isUncertain ? 'CẦN KIỂM TRA THÊM' : 'BÌNH THƯỜNG');
                             $confidenceValue = $scan->confidence_score ?? $scan->confidence ?? 0;
                             $confidencePercent = $confidenceValue <= 1 ? $confidenceValue * 100 : $confidenceValue;
+                            $clinicalComment = \App\Support\ScanAssessment::clinicalRecordComment($scan->prediction, $confidencePercent);
                         @endphp
 
                         <div class="relative pl-12 md:pl-20">
@@ -123,18 +124,14 @@
 
                                     <div class="mt-4 flex flex-wrap gap-3 text-xs font-bold uppercase tracking-widest text-gray-400">
                                         <span class="px-3 py-2 bg-gray-50 rounded-xl border border-gray-100">
-                                            Bac si chan doan: <span class="text-gray-700">{{ $scan->doctor->name ?? 'Chua ghi nhan' }}</span>
+                                            Bác sĩ chẩn đoán: <span class="text-gray-700">{{ $scan->doctor->name ?? 'Chưa ghi nhận' }}</span>
                                         </span>
                                     </div>
 
                                     <div class="mt-6 p-4 bg-[#fdfaff] rounded-2xl border border-indigo-50/50 relative">
                                         <span class="absolute -top-3 left-4 px-2 bg-white text-[10px] font-black text-indigo-400 uppercase italic">Ghi chú lâm sàng</span>
-                                        <p class="text-sm text-gray-600 font-medium leading-relaxed">
-                                            @if($isUncertain)
-                                                Hệ thống phát hiện dấu hiệu nghi vấn nhưng chưa đủ dữ liệu khẳng định. Khuyến nghị kiểm tra chuyên sâu hoặc hội chẩn.
-                                            @else
-                                                {{ $scan->doctor_comments ?? 'Hệ thống tự động phân tích qua mô hình ResNet50.' }}
-                                            @endif
+                                        <p class="text-sm text-gray-600 font-medium leading-relaxed whitespace-pre-line">
+                                            {{ $clinicalComment }}
                                         </p>
                                     </div>
 

@@ -22,6 +22,18 @@
 
     <div class="py-12 bg-[#f8fafc]">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            @if(session('error'))
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl font-bold text-sm">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl font-bold text-sm">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
             <form action="{{ route('scans.store') }}" method="POST" enctype="multipart/form-data" id="scan-form">
                 @csrf
                 <input type="hidden" name="patient_id" value="{{ $patient->id }}">

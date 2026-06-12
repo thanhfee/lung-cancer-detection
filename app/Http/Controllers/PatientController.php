@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Gemini\Laravel\Facades\Gemini;
+use App\Support\ScanAssessment;
 
 class PatientController extends Controller
 {
@@ -127,7 +128,7 @@ class PatientController extends Controller
         }
 
         $data = [
-            'title' => 'PHIẾU KẾT QUẢ CHẨN ĐOÁN HÌNH ẢNH',
+            'title' => 'PHIẾU KẾT QUẢ PHÂN TÍCH HÌNH ẢNH AI',
             'date' => date('d/m/Y'),
             'scan' => $scan,
             'patient' => $scan->patient,
@@ -136,7 +137,9 @@ class PatientController extends Controller
 
         $pdf = Pdf::loadView('patients.pdf_result', $data)
             ->setPaper('a4', 'portrait')
-            ->setOption('isRemoteEnabled', true);
+            ->setOption('isRemoteEnabled', true)
+            ->setOption('isFontSubsettingEnabled', true)
+            ->setOption('defaultFont', 'BeVietnamPro');
         return $pdf->download('KetQua_' . $scan->patient->patient_code . '.pdf');
     }
 
@@ -199,6 +202,7 @@ class PatientController extends Controller
                     'image_path' => $path,
                     'prediction' => $result['prediction'],
                     'confidence_score' => $result['confidence'],
+                    'doctor_comments' => ScanAssessment::clinicalRecordComment($result['prediction'], $result['confidence']),
                     'scan_date' => now(),
                 ]);
 

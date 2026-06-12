@@ -1,11 +1,15 @@
 from flask import Flask, request, jsonify # type: ignore
 from flask_cors import CORS                 # type: ignore
-import tensorflow as tf
 import numpy as np
 import cv2  
 from PIL import Image
 import io
 import os
+
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 
 app = Flask(__name__)
 CORS(app)
@@ -14,7 +18,9 @@ CORS(app)
 MODEL_PATH = os.path.join(os.path.dirname(__file__), 'medical_model.h5')
 
 model = None
-if os.path.exists(MODEL_PATH):
+if tf is None:
+    print("TensorFlow is not installed. Running AI service in fallback mode.")
+elif os.path.exists(MODEL_PATH):
     try:
         model = tf.keras.models.load_model(MODEL_PATH)
         print("✅ Da load Model AI ResNet50 thanh cong!")
@@ -22,6 +28,48 @@ if os.path.exists(MODEL_PATH):
         print(f"❌ Loi khi load model: {e}")
 else:
     print("⚠️ Khong tim thay file medical_model.h5. Dang chay che do GIA LAP.")
+
+def build_assessment(prediction, confidence):
+    confidence_text = f" with an estimated confidence of {confidence * 100:.1f}%"
+
+    if prediction == 'Malignant':
+        return {
+            'summary': (
+                'The AI model detected imaging features that may be associated '
+                f'with a suspicious lung abnormality{confidence_text}.'
+            ),
+            'recommendation': (
+                'Arrange specialist consultation, compare with previous imaging '
+                'if available, and consider confirmatory chest CT or additional '
+                'tests according to clinical judgement.'
+            )
+        }
+
+    if prediction == 'Uncertain':
+        return {
+            'summary': (
+                'The AI model could not classify the image with high certainty'
+                f'{confidence_text}. Image quality, positioning, or subtle findings '
+                'may limit automated interpretation.'
+            ),
+            'recommendation': (
+                'Repeat or improve imaging if needed, request radiology review, '
+                'and correlate the result with clinical findings before making '
+                'treatment decisions.'
+            )
+        }
+
+    return {
+        'summary': (
+            'The AI model did not detect obvious suspicious lung findings on this '
+            f'image{confidence_text}.'
+        ),
+        'recommendation': (
+            'Continue routine follow-up as clinically indicated, maintain '
+            'risk-factor control, and seek medical review if respiratory symptoms '
+            'persist or worsen.'
+        )
+    }
 
 def apply_clahe_preprocessing(image_bytes):
     # 1. Chuyển bytes sang numpy array để OpenCV xử lý
@@ -89,10 +137,14 @@ def predict():
             result_text = random.choice(['Benign', 'Malignant', 'Uncertain'])
             confidence = random.uniform(0.85, 0.98)
 
+        assessment = build_assessment(result_text, confidence)
+
         return jsonify({
             'status': 'success',
             'prediction': result_text,
-            'confidence': round(confidence * 100, 2)
+            'confidence': round(confidence * 100, 2),
+            'assessment': assessment['summary'],
+            'recommendation': assessment['recommendation']
         })
     except Exception as e:
         print(f"Lỗi Predict: {e}")

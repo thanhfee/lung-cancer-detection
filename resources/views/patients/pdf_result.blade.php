@@ -3,6 +3,34 @@
 <head>
     <meta charset="utf-8">
     <style>
+        @font-face {
+            font-family: "BeVietnamPro";
+            src: url("fonts/be-vietnam-pro/BeVietnamPro-Regular.ttf") format("truetype");
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: "BeVietnamPro";
+            src: url("fonts/be-vietnam-pro/BeVietnamPro-SemiBold.ttf") format("truetype");
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: "BeVietnamPro";
+            src: url("fonts/be-vietnam-pro/BeVietnamPro-Bold.ttf") format("truetype");
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: "BeVietnamPro";
+            src: url("fonts/be-vietnam-pro/BeVietnamPro-ExtraBold.ttf") format("truetype");
+            font-weight: 800;
+            font-style: normal;
+        }
+
         @page {
             margin: 28px 34px;
         }
@@ -14,7 +42,7 @@
         body {
             margin: 0;
             color: #1f2937;
-            font-family: "DejaVu Sans", sans-serif;
+            font-family: "BeVietnamPro", "DejaVu Sans", sans-serif;
             font-size: 13px;
             line-height: 1.55;
         }
@@ -267,6 +295,10 @@
             font-weight: 800;
         }
 
+        .assessment-text {
+            white-space: pre-line;
+        }
+
         .sign-space {
             height: 64px;
         }
@@ -301,16 +333,14 @@
 <body>
     @php
         $prediction = (string) $scan->prediction;
-        $predictionLower = strtolower($prediction);
-        $isMalignant = str_contains($predictionLower, 'malignant') || str_contains($predictionLower, 'cancer');
-        $isUncertain = str_contains($predictionLower, 'uncertain');
-        $resultTone = $isMalignant ? 'danger' : ($isUncertain ? 'warning' : 'success');
-        $badgeClass = $isMalignant ? 'badge-danger' : ($isUncertain ? 'badge-warning' : 'badge-success');
-        $barClass = $isMalignant ? 'bar-danger' : ($isUncertain ? 'bar-warning' : 'bar-success');
-        $resultText = $isMalignant ? 'Phát hiện bất thường' : ($isUncertain ? 'Cần kiểm tra thêm' : 'Bình thường');
+        $resultTone = \App\Support\ScanAssessment::tone($prediction);
+        $badgeClass = $resultTone === 'danger' ? 'badge-danger' : ($resultTone === 'warning' ? 'badge-warning' : 'badge-success');
+        $barClass = $resultTone === 'danger' ? 'bar-danger' : ($resultTone === 'warning' ? 'bar-warning' : 'bar-success');
+        $resultText = \App\Support\ScanAssessment::vietnameseStatusLabel($prediction);
         $confidenceValue = $scan->confidence_score ?? $scan->confidence ?? 0;
         $confidencePercent = $confidenceValue <= 1 ? $confidenceValue * 100 : $confidenceValue;
         $confidencePercent = max(0, min(100, $confidencePercent));
+        $assessment = \App\Support\ScanAssessment::clinicalRecordComment($prediction, $confidencePercent);
     @endphp
 
     <div class="top-rule"></div>
@@ -318,7 +348,7 @@
     <table class="header-table">
         <tr>
             <td>
-                <div class="brand">Hệ thống chẩn đoán ung thư phổi AI</div>
+                <div class="brand">Hệ thống AI hỗ trợ chẩn đoán ung thư phổi</div>
                 <div class="small">Phiếu kết quả phân tích hình ảnh y khoa</div>
             </td>
             <td class="doc-code">
@@ -329,7 +359,7 @@
     </table>
 
     <h1 class="title">{{ $title }}</h1>
-    <p class="date">Kết quả hỗ trợ chẩn đoán bằng mô hình Deep Learning ResNet50</p>
+    <p class="date">Kết quả hỗ trợ chẩn đoán được tạo bởi mô hình Deep Learning ResNet50</p>
 
     <div class="section-title">Thông tin bệnh nhân</div>
     <div class="info-card">
@@ -363,13 +393,13 @@
         </table>
     </div>
 
-    <div class="section-title">Kết quả chẩn đoán hình ảnh</div>
+    <div class="section-title">Kết quả phân tích hình ảnh</div>
     <table class="analysis-table">
         <tr>
             <td class="image-panel">
-                <div class="image-title">Ảnh chụp/X-quang đã phân tích</div>
+                <div class="image-title">Ảnh X-quang/CT đã phân tích</div>
                 @if(!empty($scanImagePath))
-                    <img class="scan-image" src="{{ $scanImagePath }}" alt="Ảnh chụp/X-quang đã phân tích">
+                    <img class="scan-image" src="{{ $scanImagePath }}" alt="Ảnh đã phân tích">
                 @else
                     <div class="empty-image">Không tìm thấy ảnh trong hệ thống</div>
                 @endif
@@ -382,7 +412,7 @@
 
                 <table class="confidence-row">
                     <tr>
-                        <td class="confidence-label">Độ tin cậy của AI</td>
+                        <td class="confidence-label">Độ tin cậy AI</td>
                         <td class="confidence-number">{{ number_format($confidencePercent, 1) }}%</td>
                     </tr>
                 </table>
@@ -394,16 +424,20 @@
     </table>
 
     <div class="note-card">
-        <div class="note-title">Ghi chú</div>
-        Kết quả này được phân tích tự động bằng mô hình Deep Learning ResNet50.
-        Vui lòng tham khảo ý kiến bác sĩ chuyên khoa để có kết luận cuối cùng.
+        <div class="note-title">Đánh giá, nhận xét và tư vấn chuyên môn</div>
+        <div class="assessment-text">{{ $assessment }}</div>
+    </div>
+
+    <div class="note-card">
+        <div class="note-title">Ghi chú lâm sàng</div>
+        Phiếu kết quả này được tạo tự động bởi hệ thống AI hỗ trợ quyết định y khoa. Đây không phải là chẩn đoán cuối cùng và cần được bác sĩ có chuyên môn diễn giải.
     </div>
 
     <table class="signature-table">
         <tr>
             <td></td>
             <td class="signature">
-                Bác sĩ phụ trách chẩn đoán
+                Bác sĩ phụ trách
                 <div class="sign-space"></div>
                 <div class="doctor-name">{{ $scan->doctor->name ?? '' }}</div>
                 <div>(Ký và ghi rõ họ tên)</div>
