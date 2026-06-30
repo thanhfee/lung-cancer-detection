@@ -7,8 +7,22 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+         <style>
+            @font-face {
+                font-family: "BeVietnamPro";
+                src: url("/fonts/be-vietnam-pro/BeVietnamPro-Regular.ttf") format("truetype");
+                font-weight: 400;
+                font-style: normal;
+                font-display: swap;
+            }
+            @font-face {
+                font-family: "BeVietnamPro";
+                src: url("/fonts/be-vietnam-pro/BeVietnamPro-SemiBold.ttf") format("truetype");
+                font-weight: 600;
+                font-style: normal;
+                font-display: swap;
+            }
+        </style>
 
         <!-- Styles / Scripts -->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))

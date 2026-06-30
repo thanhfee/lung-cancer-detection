@@ -120,6 +120,7 @@
                             $confidenceValue = $scan->confidence_score ?? $scan->confidence ?? 0;
                             $confidencePercent = $confidenceValue <= 1 ? $confidenceValue * 100 : $confidenceValue;
                             $confidencePercent = max(0, min(100, $confidencePercent));
+                            $clinicalComment = \App\Support\ScanAssessment::clinicalRecordComment($scan->prediction, $confidencePercent);
                         @endphp
 
                         <div class="relative pl-12 md:pl-20 animate-fade-in-up">
