@@ -1,4 +1,0 @@
-[submodule "noisystudent"]
-	path = noisystudent
-	url = https://github.com/thanhfee/noisystudent.git
-	branch = master

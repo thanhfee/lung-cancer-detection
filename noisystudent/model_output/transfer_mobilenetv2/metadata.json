@@ -1,0 +1,16 @@
+{
+  "labels": {
+    "0": "Benign",
+    "1": "Malignant"
+  },
+  "train_count": 4122,
+  "dev_count": 1031,
+  "train_labels": {
+    "0": 1022,
+    "1": 3100
+  },
+  "dev_labels": {
+    "0": 256,
+    "1": 775
+  }
+}
